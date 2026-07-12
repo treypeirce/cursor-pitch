@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "command": "node .cursor/hooks/protect-legacy-tool.mjs",
+        "matcher": "Write|Edit|Delete",
+        "timeout": 5,
+        "failClosed": true
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "node .cursor/hooks/protect-legacy.mjs",
+        "timeout": 5,
+        "failClosed": true
+      }
+    ]
+  }
+}
