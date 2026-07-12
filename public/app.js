@@ -63,6 +63,23 @@ function renderParity(data) {
   text("api-state", "Policy service connected");
 }
 
+function renderConnectionError() {
+  const panel = document.getElementById("parity-panel");
+  const callout = document.getElementById("parity-callout");
+  panel.classList.remove("match");
+  panel.classList.add("mismatch");
+  text("api-state", "Policy service unavailable");
+  text("parity-chip", "Connection failed");
+  text("expected-decision", "Unavailable");
+  text("actual-decision", "Unavailable");
+  text("actual-reason", "No current decision could be retrieved.");
+  document.querySelector(".versus span").textContent = "—";
+  callout.querySelector(".callout-icon").textContent = "!";
+  callout.querySelector("strong").textContent = "Unable to verify parity";
+  callout.querySelector("p").textContent =
+    "The policy service could not be reached. Previous results have been cleared; retry before making a decision.";
+}
+
 async function loadIncident() {
   const button = document.getElementById("rerun-button");
   button.disabled = true;
@@ -72,8 +89,7 @@ async function loadIncident() {
     if (!response.ok) throw new Error("Incident API unavailable");
     renderParity(await response.json());
   } catch (error) {
-    text("api-state", "Policy service unavailable");
-    text("parity-chip", "Connection failed");
+    renderConnectionError();
     console.error(error);
   } finally {
     button.disabled = false;
