@@ -32,7 +32,7 @@ const command = payload.command;
 const referencesLegacy =
   /(?:^|[\/\s"'=:(])(?:\.\/)?legacy(?:\/|[\s"'$]|$)/i.test(command);
 const destructiveVerb =
-  /(?:^|[;&|]\s*|\s)(?:rm|mv|cp|truncate|tee|install)\b|\bgit\s+rm\b|\bsed\s+-i\b|\bperl\s+-pi\b/i.test(
+  /(?:^|[;&|]\s*|\s)(?:rm|mv|cp|truncate|tee|install)\b|\bgit\s+(?:rm|checkout|restore)\b|\bsed\s+-i\b|\bperl\s+-pi\b/i.test(
     command,
   );
 const findDelete = /\bfind\b[^;&|]*\s-delete\b/i.test(command);

@@ -41,6 +41,22 @@ describe("legacy protection hooks", () => {
     assert.equal(result.permission, "deny");
   });
 
+  it("blocks git checkout from overwriting a legacy file", () => {
+    const result = runHook(shellHook, {
+      command: "git checkout HEAD -- legacy/POLICY-ELIGIBILITY.cbl",
+    });
+
+    assert.equal(result.permission, "deny");
+  });
+
+  it("blocks git restore from overwriting a legacy file", () => {
+    const result = runHook(shellHook, {
+      command: "git restore ./legacy/POLICY-ELIGIBILITY.cbl",
+    });
+
+    assert.equal(result.permission, "deny");
+  });
+
   it("does not confuse a similarly named directory with legacy", () => {
     const result = runHook(shellHook, { command: "rm -rf legacy-copy" });
 
