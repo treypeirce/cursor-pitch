@@ -85,7 +85,7 @@ async function incidentPayload() {
     },
     sources: {
       legacy: numberedExcerpt(legacySource, 13, 29),
-      modern: numberedExcerpt(modernSource, 29, 55),
+      modern: numberedExcerpt(modernSource, 29, 56),
     },
   };
 }
