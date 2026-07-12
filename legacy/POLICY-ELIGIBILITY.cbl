@@ -14,16 +14,16 @@
        DETERMINE-ELIGIBILITY.
       *    Fraud is an override and must be checked first.
            IF WS-CANCEL-REASON = "FRAUD"
-               MOVE "DENIED-FRAUD" TO WS-DECISION
+               MOVE "DENIED_FRAUD" TO WS-DECISION
            ELSE
                IF WS-ISSUE-YEAR < 2010
-                   MOVE "ELIGIBLE-LEGACY" TO WS-DECISION
+                   MOVE "ELIGIBLE_LEGACY" TO WS-DECISION
                ELSE
                    IF WS-STATUS = "ACTIVE"
                       AND WS-CLAIM-AMOUNT <= 50000
                        MOVE "ELIGIBLE_STANDARD" TO WS-DECISION
                    ELSE
-                       MOVE "MANUAL-REVIEW" TO WS-DECISION
+                       MOVE "MANUAL_REVIEW" TO WS-DECISION
                    END-IF
                END-IF
            END-IF.

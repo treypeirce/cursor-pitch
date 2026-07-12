@@ -5,8 +5,9 @@
   "description": "A small insurance policy monolith for demonstrating safe legacy modernization with Cursor.",
   "type": "module",
   "scripts": {
+    "start": "node src/server.ts",
     "test": "node --test test/*.test.*",
-    "build": "node --check src/eligibility.ts && node --check src/demo-incident.ts",
+    "build": "node --check src/eligibility.ts && node --check src/demo-incident.ts && node --check src/server.ts && node --check public/app.js",
     "verify": "npm run test && npm run build",
     "demo:incident": "node src/demo-incident.ts"
   },
