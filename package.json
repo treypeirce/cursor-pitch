@@ -1,0 +1,16 @@
+{
+  "name": "meridian-policy-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A small insurance policy monolith for demonstrating safe legacy modernization with Cursor.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.*",
+    "build": "node --check src/eligibility.ts && node --check src/demo-incident.ts",
+    "verify": "npm run test && npm run build",
+    "demo:incident": "node src/demo-incident.ts"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

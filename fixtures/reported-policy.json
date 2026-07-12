@@ -1,0 +1,14 @@
+{
+  "incidentId": "INC-2048",
+  "reportedBy": "Claims Operations",
+  "policy": {
+    "policyId": "POL-2008-0042",
+    "issueYear": 2008,
+    "status": "CANCELLED",
+    "cancelReason": "FRAUD",
+    "claimAmount": 12500
+  },
+  "observedDecision": "ELIGIBLE_LEGACY",
+  "expectedDecision": "DENIED_FRAUD",
+  "customerImpact": "A cancelled policy was incorrectly approved for automated claims processing."
+}
