@@ -1,6 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { readFile } from "node:fs/promises";
-import { extname, resolve } from "node:path";
+import { extname, isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import incident from "../fixtures/reported-policy.json" with { type: "json" };
 import { determineEligibility, type Policy } from "./eligibility.ts";
@@ -117,7 +117,13 @@ async function serveStatic(pathname: string, response: ServerResponse) {
   const staticPath = pathname === "/" ? "/index.html" : pathname;
   const filePath = resolve(publicDirectory, `.${staticPath}`);
 
-  if (!filePath.startsWith(`${publicDirectory}/`)) {
+  const relativePath = relative(publicDirectory, filePath);
+  const escapesPublicDirectory =
+    relativePath === ".." ||
+    relativePath.startsWith(`..${sep}`) ||
+    isAbsolute(relativePath);
+
+  if (escapesPublicDirectory) {
     sendJson(response, 404, { error: "Not found" });
     return;
   }
