@@ -31,22 +31,15 @@ if (typeof payload?.command !== "string" || payload.command.trim() === "") {
 const command = payload.command;
 const referencesLegacy =
   /(?:^|[\/\s"'=:(])(?:\.\/)?legacy(?:\/|[\s"'$]|$)/i.test(command);
-const destructiveVerb =
-  /(?:^|[;&|]\s*|\s)(?:rm|mv|cp|truncate|tee|install)\b|\bgit\s+(?:rm|checkout|restore)\b|\bsed\s+-i\b|\bperl\s+-pi\b/i.test(
-    command,
-  );
-const findDelete = /\bfind\b[^;&|]*\s-delete\b/i.test(command);
-const scriptWrite =
-  /\b(?:python3?|node|ruby|php)\b/i.test(command) &&
-  /\b(?:write|unlink|remove|rename|truncate)\b/i.test(command);
-const redirectsToLegacy =
-  />{1,2}\s*["']?(?:\.\/)?legacy(?:\/|["']|$)/i.test(command);
+const compoundOrRedirected = /[;&|<>]/.test(command);
+const safeReadOnlyCommand =
+  !compoundOrRedirected &&
+  (/^\s*(?:cat|head|tail|less|wc|file|stat|ls|rg|grep)\b/i.test(command) ||
+    /^\s*sed\s+-n\b/i.test(command) ||
+    /^\s*git\s+(?:diff|show|log|status)\b/i.test(command));
 
-if (
-  (referencesLegacy && (destructiveVerb || findDelete || scriptWrite)) ||
-  redirectsToLegacy
-) {
-  deny("Blocked: the legacy COBOL source is protected evidence for this modernization workflow.");
+if (referencesLegacy && !safeReadOnlyCommand) {
+  deny("Blocked: only read-only inspection commands may target the protected legacy COBOL source.");
   process.exit(0);
 }
 

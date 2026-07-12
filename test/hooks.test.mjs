@@ -57,6 +57,30 @@ describe("legacy protection hooks", () => {
     assert.equal(result.permission, "deny");
   });
 
+  it("blocks touch from modifying a legacy file", () => {
+    const result = runHook(shellHook, {
+      command: "touch legacy/POLICY-ELIGIBILITY.cbl",
+    });
+
+    assert.equal(result.permission, "deny");
+  });
+
+  it("allows read-only inspection of the legacy source", () => {
+    const result = runHook(shellHook, {
+      command: "cat legacy/POLICY-ELIGIBILITY.cbl",
+    });
+
+    assert.equal(result.permission, "allow");
+  });
+
+  it("blocks compound commands that mention the legacy source", () => {
+    const result = runHook(shellHook, {
+      command: "cat legacy/POLICY-ELIGIBILITY.cbl && touch legacy/CHANGED.cbl",
+    });
+
+    assert.equal(result.permission, "deny");
+  });
+
   it("does not confuse a similarly named directory with legacy", () => {
     const result = runHook(shellHook, { command: "rm -rf legacy-copy" });
 
