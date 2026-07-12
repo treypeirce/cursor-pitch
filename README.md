@@ -26,14 +26,24 @@ This is an intentional, contained regression for demonstration purposes.
 - `.cursor/environment.json` and `.cursor/Dockerfile` — pinned Node 24 Cloud Agent environment
 - `.github/workflows/ci.yml` — pull-request verification
 
-## Run locally
+## Run the visual console
 
 ```bash
 npm ci
+npm start
+```
+
+Open [http://localhost:3000](http://localhost:3000). The console calls the real TypeScript eligibility function through a Node API, shows the seeded mismatch in red, and automatically changes to a green parity-restored state after the implementation is fixed.
+
+The UI also includes a live policy simulator, source comparison, decision-order view, and the controlled Slack-to-review workflow.
+
+## Verify the repository
+
+```bash
 npm run verify
 ```
 
-The existing unit tests and syntax checks pass on the baseline. That is intentional: they demonstrate the current coverage gap. The project uses Node 24's built-in TypeScript support and test runner, so Cloud Agents do not need to download third-party packages.
+The existing behavior, server, hook, and syntax checks pass on the baseline. That is intentional: they demonstrate the current coverage gap. The project uses Node 24's built-in TypeScript support and test runner, so Cloud Agents do not need to download third-party packages.
 
 To reproduce the reported incident:
 

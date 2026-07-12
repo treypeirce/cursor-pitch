@@ -49,4 +49,6 @@ npm run demo:incident
 - Install dependencies with `npm ci`.
 - Work on a separate branch.
 - Include test output and the incident reproduction result in the pull-request description.
+- Start the console with `npm start`; when browser tools are available, attach a screenshot showing the parity state.
 - Use the repository's project hooks once the writable environment is active.
+nment is active.
