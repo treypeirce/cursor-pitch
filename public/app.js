@@ -28,10 +28,10 @@ function labelDecision(code) {
 
 function codeRule(textValue) {
   const trimmed = textValue.trim();
-  if (/WS-CANCEL-REASON/.test(textValue) || /^"fraud",?$/.test(trimmed)) {
+  if (/WS-CANCEL-REASON|policy\.cancelReason/.test(textValue) || /^"fraud",?$/.test(trimmed)) {
     return { className: "fraud-line", label: "Fraud override" };
   }
-  if (/WS-ISSUE-YEAR/.test(textValue) || /^"grandfathering",?$/.test(trimmed)) {
+  if (/WS-ISSUE-YEAR|policy\.issueYear/.test(textValue) || /^"grandfathering",?$/.test(trimmed)) {
     return { className: "year-line", label: "Grandfathering" };
   }
   return null;
