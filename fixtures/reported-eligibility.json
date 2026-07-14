@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "314b8fc5333bc44eb8149bf955469fc4f66022a9",
+  "file": "src/eligibility.ts",
+  "sha256": "498224a66ad533258f71795f0437c980b1d36c363791c8c84239fd7af1d34979",
+  "lines": [
+    { "number": 29, "text": "export function determineEligibility(policy: Policy): EligibilityDecision {" },
+    { "number": 30, "text": "  // Grandfather policies issued before the 2010 contract change." },
+    { "number": 31, "text": "  if (policy.issueYear < 2010) {" },
+    { "number": 32, "text": "    return {" },
+    { "number": 33, "text": "      code: \"ELIGIBLE_LEGACY\"," },
+    { "number": 34, "text": "      reason: \"Policy is protected by the pre-2010 grandfathering rule.\"," },
+    { "number": 35, "text": "    };" },
+    { "number": 36, "text": "  }" },
+    { "number": 37, "text": "" },
+    { "number": 38, "text": "  if (policy.cancelReason === \"FRAUD\") {" },
+    { "number": 39, "text": "    return {" },
+    { "number": 40, "text": "      code: \"DENIED_FRAUD\"," },
+    { "number": 41, "text": "      reason: \"Policies cancelled for fraud are not eligible.\"," },
+    { "number": 42, "text": "    };" },
+    { "number": 43, "text": "  }" }
+  ]
+}

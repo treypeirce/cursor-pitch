@@ -1,6 +1,9 @@
 {
+  "schemaVersion": 1,
   "incidentId": "INC-2048",
   "reportedBy": "Claims Operations",
+  "sourceCommit": "314b8fc5333bc44eb8149bf955469fc4f66022a9",
+  "legacyReferenceSha256": "3b3a2f4f6a485e2297755bb6185c860396015073cec0cc65e03e71b28aa04b84",
   "policy": {
     "policyId": "POL-2008-0042",
     "issueYear": 2008,
@@ -9,6 +12,8 @@
     "claimAmount": 12500
   },
   "observedDecision": "ELIGIBLE_LEGACY",
+  "observedDecisionOrder": ["grandfathering", "fraud", "standard", "manual"],
+  "observedTraceBasis": "Reconstructed from src/eligibility.ts at sourceCommit",
   "expectedDecision": "DENIED_FRAUD",
   "customerImpact": "A cancelled policy was incorrectly approved for automated claims processing."
 }

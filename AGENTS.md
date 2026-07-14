@@ -49,6 +49,6 @@ npm run demo:incident
 - Install dependencies with `npm ci`.
 - Work on a separate branch.
 - Include test output and the incident reproduction result in the pull-request description.
-- Start the console with `npm start`; when browser tools are available, attach a screenshot showing the parity state.
+- Start the console with `npm start`; when browser tools are available, attach a screenshot showing the side-by-side COBOL/TypeScript source comparison before and after the fix.
+- Preserve the console's single-screen presentation: compact policy facts, the two relevant source excerpts, the outcome comparison, and the human merge boundary. Do not add a simulator, generic dashboard cards, a long code dump, or decorative workflow steps.
 - Use the repository's project hooks once the writable environment is active.
-nment is active.
