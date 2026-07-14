@@ -6,7 +6,13 @@ import { resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import reportedEligibility from "../fixtures/reported-eligibility.json" with { type: "json" };
 import incident from "../fixtures/reported-policy.json" with { type: "json" };
-import { determineEligibility, traceEligibility, type Policy } from "./eligibility.ts";
+import {
+  determineEligibility,
+  traceEligibility,
+  traceEligibilityOrder,
+  type EligibilityRuleId,
+  type Policy,
+} from "./eligibility.ts";
 
 const rootDirectory = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const publicDirectory = resolve(rootDirectory, "public");
@@ -34,7 +40,7 @@ const ruleDefinitions = {
   manual: { label: "Otherwise route to review", shortLabel: "Manual review" },
 } as const;
 
-type RuleId = keyof typeof ruleDefinitions;
+type RuleId = EligibilityRuleId;
 type DecisionOrder = RuleId[];
 
 function sendJson(response: ServerResponse, status: number, body: unknown) {
@@ -93,33 +99,6 @@ function currentOrderExcerpt(source: string) {
     { number: null, text: "  // … standard and manual fallbacks unchanged" },
     ...sourceLines(source, end, 1),
   ];
-}
-
-function predicate(ruleId: RuleId, policy: Policy): boolean {
-  switch (ruleId) {
-    case "fraud": return policy.cancelReason === "FRAUD";
-    case "grandfathering": return policy.issueYear < 2010;
-    case "standard": return policy.status === "ACTIVE" && policy.claimAmount <= 50_000;
-    case "manual": return true;
-  }
-}
-
-function traceDecision(order: DecisionOrder, policy: Policy) {
-  let stopped = false;
-  return order.map((ruleId, index) => {
-    const reached = !stopped;
-    const matched = reached ? predicate(ruleId, policy) : false;
-    if (matched) stopped = true;
-    return {
-      ruleId,
-      ordinal: index + 1,
-      label: ruleDefinitions[ruleId].label,
-      shortLabel: ruleDefinitions[ruleId].shortLabel,
-      reached,
-      matched,
-      terminal: matched,
-    };
-  });
 }
 
 function decorateTrace(trace: ReturnType<typeof traceEligibility>["trace"]) {
@@ -195,7 +174,7 @@ async function incidentPayload() {
       file: "legacy/POLICY-ELIGIBILITY.cbl",
       decision: incident.expectedDecision,
       order: referenceOrder,
-      trace: traceDecision(referenceOrder, policy),
+      trace: decorateTrace(traceEligibilityOrder(referenceOrder, policy).trace),
       code: legacyPriorityExcerpt(legacySource),
       sha256: legacyReferenceSha256,
     },
@@ -204,7 +183,7 @@ async function incidentPayload() {
       qualifier: "Reconstructed at the baseline commit",
       decision: incident.observedDecision,
       order: reportedOrder,
-      trace: traceDecision(reportedOrder, policy),
+      trace: decorateTrace(traceEligibilityOrder(reportedOrder, policy).trace),
       code: reportedCode,
       file: reportedEligibility.file,
       sourceCommit: reportedEligibility.sourceCommit,

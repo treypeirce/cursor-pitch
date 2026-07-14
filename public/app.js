@@ -74,6 +74,7 @@ function render() {
   if (!incidentData) return;
   const { incident, reference, controls } = incidentData;
   const comparison = selectedComparison();
+  const isSnapshot = activeView === "snapshot";
   const matches = comparison.decision === reference.decision;
   const canvas = element("decision-canvas");
   const chip = element("status-chip");
@@ -82,20 +83,24 @@ function render() {
   canvas.classList.add(matches ? "match" : "mismatch");
   canvas.setAttribute("aria-busy", "false");
   chip.className = `status-chip ${matches ? "match" : "mismatch"}`;
-  chip.textContent = matches ? "Parity restored" : "Mismatch detected";
+  chip.textContent = isSnapshot ? "Incident snapshot" : (matches ? "Parity restored" : "Mismatch detected");
 
   text("incident-label", `${incident.id} · ${incident.reportedBy}`);
   text(
     "finding-title",
-    matches
-      ? "The two checks now run in the same order."
-      : "Two checks are reversed in the TypeScript service.",
+    isSnapshot
+      ? "Baseline incident: two checks were reversed."
+      : matches
+        ? "The two checks now run in the same order."
+        : "Two checks are reversed in the current TypeScript branch.",
   );
   text(
     "finding-summary",
-    matches
-      ? "Fraud is evaluated before grandfathering, so the modern branch returns the expected decision."
-      : "Both conditions are true for this policy. The first matching check wins.",
+    isSnapshot
+      ? "This pinned snapshot preserves the original failure for before-and-after comparison."
+      : matches
+        ? "Fraud is evaluated before grandfathering, so the current branch returns the expected decision."
+        : "Both conditions are true for this policy. The first matching check wins.",
   );
 
   text("policy-id", incident.policy.policyId);
@@ -118,9 +123,11 @@ function render() {
   renderCode("comparison-code", comparison.code);
   text(
     "change-summary",
-    matches
-      ? "Verified: TypeScript now checks fraud first. The COBOL reference remains unchanged; a human still owns merge."
-      : "Required change: move the fraud override above grandfathering in TypeScript. Do not change the COBOL reference.",
+    isSnapshot
+      ? "Historical baseline: fraud was below grandfathering. Switch to Verified current to inspect the active branch."
+      : matches
+        ? "Verified: TypeScript now checks fraud first. The COBOL reference remains unchanged; a human still owns merge."
+        : "Required change: move the fraud override above grandfathering in TypeScript. Do not change the COBOL reference.",
   );
 
   text("legacy-control", controls.legacySourceChanged ? "Legacy source changed" : "Legacy source unchanged");

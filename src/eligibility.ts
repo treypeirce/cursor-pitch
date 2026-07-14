@@ -68,16 +68,13 @@ function matchesRule(ruleId: EligibilityRuleId, policy: Policy): boolean {
   }
 }
 
-export function traceEligibility(policy: Policy): {
+export function traceEligibilityOrder(
+  order: EligibilityRuleId[],
+  policy: Policy,
+): {
   decision: EligibilityDecision;
   trace: EligibilityTraceStep[];
 } {
-  const order: EligibilityRuleId[] = [
-    "grandfathering",
-    "fraud",
-    "standard",
-    "manual",
-  ];
   const trace: EligibilityTraceStep[] = [];
   let decision: EligibilityDecision | null = null;
 
@@ -89,6 +86,19 @@ export function traceEligibility(policy: Policy): {
   }
 
   return { decision: decision ?? ruleDecisions.manual, trace };
+}
+
+export function traceEligibility(policy: Policy): {
+  decision: EligibilityDecision;
+  trace: EligibilityTraceStep[];
+} {
+  const order: EligibilityRuleId[] = [
+    "grandfathering",
+    "fraud",
+    "standard",
+    "manual",
+  ];
+  return traceEligibilityOrder(order, policy);
 }
 
 export function determineEligibility(policy: Policy): EligibilityDecision {
