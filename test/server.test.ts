@@ -33,15 +33,15 @@ describe("Policy Eligibility Console", () => {
 
     assert.equal(response.status, 200);
     assert.equal(body.parity.expected, "DENIED_FRAUD");
-    assert.equal(body.parity.actual, "ELIGIBLE_LEGACY");
-    assert.equal(body.parity.matchesExpected, false);
+    assert.equal(body.parity.actual, "DENIED_FRAUD");
+    assert.equal(body.parity.matchesExpected, true);
     assert.deepEqual(body.decisionOrder.legacy.slice(0, 2), [
       "Fraud cancellation override",
       "Pre-2010 grandfathering",
     ]);
     assert.deepEqual(body.decisionOrder.modern.slice(0, 2), [
-      "Pre-2010 grandfathering",
       "Fraud cancellation override",
+      "Pre-2010 grandfathering",
     ]);
   });
 
