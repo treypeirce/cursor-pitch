@@ -27,18 +27,18 @@ export interface EligibilityDecision {
  * truth while this modernization is under evaluation.
  */
 export function determineEligibility(policy: Policy): EligibilityDecision {
+  if (policy.cancelReason === "FRAUD") {
+    return {
+      code: "DENIED_FRAUD",
+      reason: "Policies cancelled for fraud are not eligible.",
+    };
+  }
+
   // Grandfather policies issued before the 2010 contract change.
   if (policy.issueYear < 2010) {
     return {
       code: "ELIGIBLE_LEGACY",
       reason: "Policy is protected by the pre-2010 grandfathering rule.",
-    };
-  }
-
-  if (policy.cancelReason === "FRAUD") {
-    return {
-      code: "DENIED_FRAUD",
-      reason: "Policies cancelled for fraud are not eligible.",
     };
   }
 
