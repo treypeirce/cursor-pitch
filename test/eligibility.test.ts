@@ -71,4 +71,18 @@ describe("determineEligibility", () => {
 
     assert.equal(result.code, "ELIGIBLE_LEGACY");
   });
+
+  it("denies a pre-2010 policy cancelled for fraud before grandfathering", () => {
+    const result = determineEligibility(
+      policy({
+        policyId: "POL-2008-0042",
+        issueYear: 2008,
+        status: "CANCELLED",
+        cancelReason: "FRAUD",
+        claimAmount: 12_500,
+      }),
+    );
+
+    assert.equal(result.code, "DENIED_FRAUD");
+  });
 });
