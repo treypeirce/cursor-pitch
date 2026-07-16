@@ -14,8 +14,10 @@ function policy(overrides: Partial<Policy> = {}): Policy {
 }
 
 describe("determineEligibility", () => {
-  it("grandfathers an active policy issued before 2010", () => {
-    const result = determineEligibility(policy({ issueYear: 2008 }));
+  it("keeps a legitimate pre-2010 active policy eligible when no fraud is on file", () => {
+    const result = determineEligibility(
+      policy({ issueYear: 2008, status: "ACTIVE", cancelReason: null }),
+    );
 
     assert.equal(result.code, "ELIGIBLE_LEGACY");
   });

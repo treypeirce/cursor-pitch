@@ -27,7 +27,7 @@ describe("Policy Eligibility Console", () => {
     assert.match(html, /Policy Eligibility Console/);
   });
 
-  it("reports the seeded parity mismatch", async () => {
+  it("reports restored parity for the seeded incident", async () => {
     const response = await fetch(`${baseUrl}/api/incident`);
     const body = await response.json();
 
