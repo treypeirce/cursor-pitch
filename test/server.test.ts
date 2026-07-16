@@ -27,21 +27,21 @@ describe("Policy Eligibility Console", () => {
     assert.match(html, /Policy Eligibility Console/);
   });
 
-  it("reports the seeded parity mismatch", async () => {
+  it("reports restored parity for the seeded incident", async () => {
     const response = await fetch(`${baseUrl}/api/incident`);
     const body = await response.json();
 
     assert.equal(response.status, 200);
     assert.equal(body.parity.expected, "DENIED_FRAUD");
-    assert.equal(body.parity.actual, "ELIGIBLE_LEGACY");
-    assert.equal(body.parity.matchesExpected, false);
+    assert.equal(body.parity.actual, "DENIED_FRAUD");
+    assert.equal(body.parity.matchesExpected, true);
     assert.deepEqual(body.decisionOrder.legacy.slice(0, 2), [
       "Fraud cancellation override",
       "Pre-2010 grandfathering",
     ]);
     assert.deepEqual(body.decisionOrder.modern.slice(0, 2), [
-      "Pre-2010 grandfathering",
       "Fraud cancellation override",
+      "Pre-2010 grandfathering",
     ]);
   });
 
@@ -75,3 +75,5 @@ describe("Policy Eligibility Console", () => {
     assert.equal(response.status, 400);
   });
 });
+
+
