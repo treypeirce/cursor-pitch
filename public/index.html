@@ -4,136 +4,97 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light" />
-    <title>Meridian Policy Eligibility Console</title>
+    <title>Meridian Decision X-Ray</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <header class="topbar">
-      <div class="brand">
-        <span class="brand-mark">M</span>
-        <span><strong>Meridian</strong><small>Policy Operations</small></span>
+    <header class="appbar">
+      <div class="brand" aria-label="Meridian Global Insurance">
+        <span class="brand-mark" aria-hidden="true">M</span>
+        <span><strong>Meridian</strong><small>Policy modernization lab</small></span>
       </div>
-      <div class="environment"><span class="pulse"></span> Demo environment</div>
+      <div class="appbar-actions">
+        <div class="view-toggle" role="group" aria-label="Comparison view">
+          <button type="button" id="snapshot-button" aria-pressed="false">Incident snapshot</button>
+          <button type="button" id="live-button" aria-pressed="true">Verified current</button>
+        </div>
+        <button type="button" class="verify-button" id="verify-button">Verify current branch</button>
+      </div>
     </header>
 
-    <main>
-      <section class="hero">
-        <div>
-          <p class="eyebrow" id="incident-label">INCIDENT · LOADING</p>
-          <h1>One policy. Two systems.<br /><span>One decision gap.</span></h1>
-          <p class="hero-copy">
-            A contained legacy-modernization incident showing how business logic can drift—even when every existing test is green.
-          </p>
+    <main class="shell">
+      <section class="finding-header" aria-labelledby="finding-title">
+        <div class="finding-copy">
+          <div class="incident-line">
+            <span id="incident-label">INC-2048</span>
+            <span class="status-chip loading" id="status-chip">Verifying</span>
+          </div>
+          <h1 id="finding-title">Tracing the policy decision…</h1>
+          <p id="finding-summary">Comparing the reported incident with source-backed rule order and the current TypeScript service.</p>
         </div>
-        <aside class="review-gate">
-          <p>Current decision owner</p>
-          <strong>Human reviewer</strong>
-          <span>No production changes are automatic</span>
-        </aside>
       </section>
 
-      <section class="parity-panel mismatch" id="parity-panel" aria-live="polite">
-        <div class="section-heading">
+      <section class="decision-canvas loading" id="decision-canvas" aria-busy="true" aria-labelledby="comparison-title">
+        <header class="canvas-header">
           <div>
-            <p class="eyebrow">LEGACY PARITY CHECK</p>
-            <h2>Reported policy decision</h2>
+            <p class="kicker">SOURCE COMPARISON</p>
+            <h2 id="comparison-title">The first matching condition decides the outcome.</h2>
           </div>
-          <div class="heading-actions">
-            <span class="status-chip" id="parity-chip">Checking</span>
-            <button type="button" id="rerun-button">Re-run case</button>
-          </div>
+          <div class="evaluation-rule">Only the two competing checks are shown</div>
+        </header>
+
+        <div class="case-capsule" aria-label="Same policy enters both code paths">
+          <span class="case-prefix">Same policy</span>
+          <span class="case-id" id="policy-id">POL-2008-0042</span>
+          <span class="activating-fact">Issued <strong id="issue-year">2008</strong></span>
+          <span>Status <strong id="policy-status">Cancelled</strong></span>
+          <span class="activating-fact">Reason <strong id="cancel-reason">Fraud</strong></span>
+          <span class="secondary">Claim <strong id="claim-amount">$12,500</strong></span>
         </div>
 
-        <div class="decision-comparison">
-          <article>
-            <p>Expected from legacy contract</p>
-            <strong id="expected-decision">—</strong>
-            <span>Authoritative business behavior</span>
+        <div class="code-comparison">
+          <article class="code-panel reference-code" aria-labelledby="reference-heading">
+            <header id="reference-heading">
+              <div><strong id="reference-label">Expected behavior</strong><span id="reference-qualifier">Reviewed COBOL source</span></div>
+              <code>POLICY-ELIGIBILITY.cbl</code>
+            </header>
+            <pre id="reference-code" aria-label="COBOL reference code"></pre>
           </article>
-          <div class="versus"><span>≠</span><small>PARITY</small></div>
-          <article>
-            <p>Current TypeScript service</p>
-            <strong id="actual-decision">—</strong>
-            <span id="actual-reason">Evaluating policy</span>
-          </article>
-        </div>
 
-        <div class="parity-callout" id="parity-callout">
-          <span class="callout-icon">!</span>
-          <div><strong>Decision mismatch</strong><p>Loading incident evidence…</p></div>
-        </div>
-      </section>
+          <div class="comparison-mark" id="comparison-mark" aria-hidden="true">≠</div>
 
-      <section class="detail-grid">
-        <article class="detail-card">
-          <div class="card-title"><span>01</span><h2>Incident evidence</h2></div>
-          <dl>
-            <div><dt>Policy</dt><dd id="policy-id">—</dd></div>
-            <div><dt>Issue year</dt><dd id="issue-year">—</dd></div>
-            <div><dt>Status</dt><dd id="policy-status">—</dd></div>
-            <div><dt>Cancellation</dt><dd id="cancel-reason">—</dd></div>
-            <div><dt>Claim amount</dt><dd id="claim-amount">—</dd></div>
-          </dl>
-          <div class="impact-note"><span>Customer impact</span><p id="customer-impact">—</p></div>
-        </article>
-
-        <article class="detail-card">
-          <div class="card-title"><span>02</span><h2>Decision order</h2></div>
-          <div class="order-columns">
-            <div><p>COBOL source</p><ol id="legacy-order"></ol></div>
-            <div><p>TypeScript target</p><ol id="modern-order"></ol></div>
-          </div>
-        </article>
-      </section>
-
-      <section class="source-section">
-        <div class="section-heading">
-          <div><p class="eyebrow">EVIDENCE, NOT GUESSWORK</p><h2>Compare the source behavior</h2></div>
-          <p class="section-note">The agent should cite this difference before editing.</p>
-        </div>
-        <div class="code-grid">
-          <article class="code-panel">
-            <header><div><span class="code-dot amber"></span><strong>Legacy reference</strong></div><code>POLICY-ELIGIBILITY.cbl</code></header>
-            <pre><code id="legacy-source">Loading source…</code></pre>
-          </article>
-          <article class="code-panel">
-            <header><div><span class="code-dot blue"></span><strong>Modern service</strong></div><code>eligibility.ts</code></header>
-            <pre><code id="modern-source">Loading source…</code></pre>
+          <article class="code-panel current-code" aria-labelledby="comparison-heading">
+            <header id="comparison-heading">
+              <div><strong id="comparison-label">Current branch</strong><span id="comparison-qualifier">Executed in this server process</span></div>
+              <code>eligibility.ts</code>
+            </header>
+            <pre id="comparison-code" aria-label="TypeScript comparison code"></pre>
           </article>
         </div>
-      </section>
 
-      <section class="simulator-section">
-        <div class="simulator-copy">
-          <p class="eyebrow">LIVE POLICY SIMULATOR</p>
-          <h2>Test another case</h2>
-          <p>The simulator calls the same TypeScript function used by the incident API. It is not a staged result.</p>
+        <div class="outcome-grid">
+          <article class="outcome reference-outcome">
+            <span>Expected outcome</span>
+            <strong id="reference-decision">—</strong>
+          </article>
+          <div class="parity-symbol" id="parity-symbol" aria-hidden="true">≠</div>
+          <article class="outcome comparison-outcome">
+            <span id="comparison-outcome-label">Current outcome</span>
+            <strong id="comparison-decision">—</strong>
+          </article>
         </div>
-        <form id="policy-form">
-          <label>Issue year<input id="form-year" type="number" value="2026" min="1900" max="2100" /></label>
-          <label>Status<select id="form-status"><option>ACTIVE</option><option>CANCELLED</option></select></label>
-          <label>Cancellation<select id="form-reason"><option value="">None</option><option value="FRAUD">Fraud</option><option value="CUSTOMER_REQUEST">Customer request</option></select></label>
-          <label>Claim amount<input id="form-amount" type="number" value="25000" min="0" /></label>
-          <button type="submit">Evaluate policy</button>
-        </form>
-        <div class="simulator-result" id="simulator-result"><span>Ready</span><strong>Enter a policy to evaluate</strong><p>The decision and reason will appear here.</p></div>
-      </section>
 
-      <section class="workflow-strip">
-        <p class="eyebrow">CONTROLLED WORKFLOW</p>
-        <div class="workflow-steps">
-          <div class="done"><span>1</span><strong>Slack report</strong><small>Human context captured</small></div>
-          <i></i>
-          <div class="active"><span>2</span><strong>Agent investigation</strong><small>Evidence before edits</small></div>
-          <i></i>
-          <div><span>3</span><strong>Verified pull request</strong><small>Tests and Bugbot</small></div>
-          <i></i>
-          <div><span>4</span><strong>Human decision</strong><small>Merge remains owned</small></div>
-        </div>
+        <p class="change-summary" id="change-summary">Verifying the priority change…</p>
       </section>
     </main>
 
-    <footer><span>MERIDIAN GLOBAL INSURANCE · FICTIONAL DEMO</span><span id="api-state">Connecting to policy service…</span></footer>
+    <footer class="footer">
+      <span>MERIDIAN GLOBAL INSURANCE · FICTIONAL DEMO</span>
+      <span class="footer-control"><span id="legacy-control">Legacy source unchanged</span> · <span id="merge-owner">Human reviewer owns merge</span></span>
+      <span id="verification-time">Connecting to policy service…</span>
+    </footer>
+
+    <div class="sr-only" id="screen-reader-status" role="status" aria-live="polite" aria-atomic="true"></div>
     <script type="module" src="/app.js"></script>
   </body>
 </html>

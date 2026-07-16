@@ -16,7 +16,9 @@ This is an intentional, contained regression for demonstration purposes.
 
 - `legacy/POLICY-ELIGIBILITY.cbl` — authoritative legacy behavior
 - `src/eligibility.ts` — modernization target with the intentional regression
-- `fixtures/reported-policy.json` — sanitized incident example
+- `fixtures/reported-policy.json` — sanitized incident example and baseline metadata
+- `fixtures/reported-eligibility.ts` — integrity-pinned TypeScript source captured from the baseline commit
+- `fixtures/reported-eligibility.json` — snapshot provenance and exact displayed line pairs
 - `test/eligibility.test.ts` — current regression suite
 - `docs/business-rules.md` — plain-English decision order
 - `AGENTS.md` — durable repository instructions for agents
@@ -33,9 +35,9 @@ npm ci
 npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The console calls the real TypeScript eligibility function through a Node API, shows the seeded mismatch in red, and automatically changes to a green parity-restored state after the implementation is fixed.
+Open [http://localhost:3000](http://localhost:3000). The console is a single-screen **source comparison**: the relevant COBOL checks and TypeScript order sit side by side, the first and second priorities are labeled directly in the code, and the resulting decisions appear immediately below.
 
-The UI also includes a live policy simulator, source comparison, decision-order view, and the controlled Slack-to-review workflow.
+Use **Incident snapshot** to show the exact baseline TypeScript excerpt and **Verified current** to execute the current branch. After the implementation is fixed and the server restarts, the two TypeScript priority lines swap into alignment, the outcomes match, and the COBOL reference remains unchanged.
 
 ## Verify the repository
 

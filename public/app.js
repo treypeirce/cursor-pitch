@@ -1,7 +1,7 @@
 const decisionLabels = {
   DENIED_FRAUD: "Denied · Fraud",
-  ELIGIBLE_LEGACY: "Eligible · Legacy",
-  ELIGIBLE_STANDARD: "Eligible · Standard",
+  ELIGIBLE_LEGACY: "Approved · Grandfathered",
+  ELIGIBLE_STANDARD: "Approved · Standard",
   MANUAL_REVIEW: "Manual review",
 };
 
@@ -11,127 +11,227 @@ const money = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
-function text(id, value) {
-  document.getElementById(id).textContent = value;
+let incidentData = null;
+let activeView = "live";
+
+function element(id) {
+  return document.getElementById(id);
 }
 
-function renderOrder(id, values) {
-  const list = document.getElementById(id);
-  list.replaceChildren(
-    ...values.map((value) => {
-      const item = document.createElement("li");
-      item.textContent = value;
-      return item;
-    }),
+function text(id, value) {
+  element(id).textContent = value;
+}
+
+function labelDecision(code) {
+  return decisionLabels[code] ?? code ?? "Unavailable";
+}
+
+function codeRule(textValue) {
+  const trimmed = textValue.trim();
+  if (/WS-CANCEL-REASON|policy\.cancelReason/.test(textValue) || /^"fraud",?$/.test(trimmed)) {
+    return { className: "fraud-line", label: "Fraud override" };
+  }
+  if (/WS-ISSUE-YEAR|policy\.issueYear/.test(textValue) || /^"grandfathering",?$/.test(trimmed)) {
+    return { className: "year-line", label: "Grandfathering" };
+  }
+  return null;
+}
+
+function renderCode(containerId, lines) {
+  const container = element(containerId);
+  let priority = 0;
+  container.replaceChildren(...lines.map((line) => {
+    const row = document.createElement("span");
+    row.className = "code-line";
+
+    const number = document.createElement("span");
+    number.className = "line-number";
+    number.textContent = line.number == null ? "" : String(line.number).padStart(2, "0");
+
+    const source = document.createElement("code");
+    source.textContent = line.text;
+
+    row.append(number, source);
+    const rule = codeRule(line.text);
+    if (rule) {
+      priority += 1;
+      row.classList.add(rule.className);
+      row.style.viewTransitionName = `${containerId}-${rule.className}`;
+      const tag = document.createElement("span");
+      tag.className = "rule-tag";
+      tag.textContent = `${priority}${priority === 1 ? "st" : "nd"} · ${rule.label}`;
+      row.append(tag);
+    }
+    return row;
+  }));
+}
+
+function selectedComparison() {
+  return activeView === "snapshot" ? incidentData.reported : incidentData.current;
+}
+
+function render() {
+  if (!incidentData) return;
+  const { incident, reference, controls } = incidentData;
+  const comparison = selectedComparison();
+  const isSnapshot = activeView === "snapshot";
+  const matches = comparison.decision === reference.decision;
+  const canvas = element("decision-canvas");
+  const chip = element("status-chip");
+
+  canvas.classList.remove("loading", "match", "mismatch");
+  canvas.classList.add(matches ? "match" : "mismatch");
+  canvas.setAttribute("aria-busy", "false");
+  chip.className = `status-chip ${matches ? "match" : "mismatch"}`;
+  chip.textContent = isSnapshot ? "Incident snapshot" : (matches ? "Parity restored" : "Mismatch detected");
+
+  text("incident-label", `${incident.id} · ${incident.reportedBy}`);
+  text(
+    "finding-title",
+    isSnapshot
+      ? "Baseline incident: two checks were reversed."
+      : matches
+        ? "The two checks now run in the same order."
+        : "Two checks are reversed in the current TypeScript branch.",
+  );
+  text(
+    "finding-summary",
+    isSnapshot
+      ? "This pinned snapshot preserves the original failure for before-and-after comparison."
+      : matches
+        ? "Fraud is evaluated before grandfathering, so the current branch returns the expected decision."
+        : "Both conditions are true for this policy. The first matching check wins.",
+  );
+
+  text("policy-id", incident.policy.policyId);
+  text("issue-year", String(incident.policy.issueYear));
+  text("policy-status", incident.policy.status.charAt(0) + incident.policy.status.slice(1).toLowerCase());
+  text("cancel-reason", incident.policy.cancelReason ?? "None");
+  text("claim-amount", money.format(incident.policy.claimAmount));
+
+  text("reference-label", reference.label);
+  text("reference-qualifier", reference.qualifier);
+  text("comparison-label", comparison.label);
+  text("comparison-qualifier", comparison.qualifier);
+  text("reference-decision", labelDecision(reference.decision));
+  text("comparison-decision", labelDecision(comparison.decision));
+  text("comparison-outcome-label", activeView === "snapshot" ? "Reported outcome" : "Current outcome");
+  text("comparison-mark", matches ? "=" : "≠");
+  text("parity-symbol", matches ? "=" : "≠");
+
+  renderCode("reference-code", reference.code);
+  renderCode("comparison-code", comparison.code);
+  text(
+    "change-summary",
+    isSnapshot
+      ? "Historical baseline: fraud was below grandfathering. Switch to Verified current to inspect the active branch."
+      : matches
+        ? "Verified: TypeScript now checks fraud first. The COBOL reference remains unchanged; a human still owns merge."
+        : "Required change: move the fraud override above grandfathering in TypeScript. Do not change the COBOL reference.",
+  );
+
+  text("legacy-control", controls.legacySourceChanged ? "Legacy source changed" : "Legacy source unchanged");
+  text("merge-owner", `Demo policy · ${controls.mergeOwner} owns merge`);
+
+  text(
+    "verification-time",
+    activeView === "snapshot"
+      ? "Incident snapshot · baseline commit"
+      : `Current branch verified ${new Date(incidentData.current.verifiedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", second: "2-digit" })}`,
+  );
+
+  element("snapshot-button").disabled = false;
+  element("live-button").disabled = false;
+  element("snapshot-button").setAttribute("aria-pressed", String(activeView === "snapshot"));
+  element("live-button").setAttribute("aria-pressed", String(activeView === "live"));
+  text(
+    "screen-reader-status",
+    `${activeView === "snapshot" ? "Incident snapshot" : "Verified current branch"}. ${matches ? "Parity restored; fraud is checked first in both code paths" : "Mismatch detected; the comparison checks grandfathering before fraud"}. Reference outcome ${labelDecision(reference.decision)}. Comparison outcome ${labelDecision(comparison.decision)}.`,
   );
 }
 
-function renderParity(data) {
-  const { incident, parity, decisionOrder, sources } = data;
-  text("incident-label", `INCIDENT ${incident.id} · ${incident.reportedBy}`);
-  text("expected-decision", decisionLabels[parity.expected] ?? parity.expected);
-  text("actual-decision", decisionLabels[parity.actual] ?? parity.actual);
-  text("actual-reason", parity.reason);
-  text("policy-id", incident.policy.policyId);
-  text("issue-year", String(incident.policy.issueYear));
-  text("policy-status", incident.policy.status);
-  text("cancel-reason", incident.policy.cancelReason ?? "None");
-  text("claim-amount", money.format(incident.policy.claimAmount));
-  text("customer-impact", incident.customerImpact);
-  text("legacy-source", sources.legacy);
-  text("modern-source", sources.modern);
-  renderOrder("legacy-order", decisionOrder.legacy);
-  renderOrder("modern-order", decisionOrder.modern);
+function commitWithTransition(update) {
+  if (document.startViewTransition && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.startViewTransition(update);
+  } else {
+    update();
+  }
+}
 
-  const panel = document.getElementById("parity-panel");
-  const chip = document.getElementById("parity-chip");
-  const callout = document.getElementById("parity-callout");
-  const icon = callout.querySelector(".callout-icon");
-  const heading = callout.querySelector("strong");
-  const copy = callout.querySelector("p");
-  const versus = document.querySelector(".versus span");
-
-  panel.classList.toggle("match", parity.matchesExpected);
-  panel.classList.toggle("mismatch", !parity.matchesExpected);
-  chip.textContent = parity.matchesExpected ? "Parity restored" : "Mismatch detected";
-  icon.textContent = parity.matchesExpected ? "✓" : "!";
-  heading.textContent = parity.matchesExpected ? "Decision parity restored" : "Decision mismatch";
-  copy.textContent = parity.matchesExpected
-    ? "The modern service now preserves the fraud override and the legitimate grandfathering rule. Human review is still required before merge."
-    : "The modern service evaluates grandfathering before the fraud override. Existing tests do not cover this interaction."
-  versus.textContent = parity.matchesExpected ? "=" : "≠";
-  text("api-state", "Policy service connected");
+function changeView(nextView) {
+  if (!incidentData || activeView === nextView) return;
+  commitWithTransition(() => {
+    activeView = nextView;
+    render();
+  });
 }
 
 function renderConnectionError() {
-  const panel = document.getElementById("parity-panel");
-  const callout = document.getElementById("parity-callout");
-  panel.classList.remove("match");
-  panel.classList.add("mismatch");
-  text("api-state", "Policy service unavailable");
-  text("parity-chip", "Connection failed");
-  text("expected-decision", "Unavailable");
-  text("actual-decision", "Unavailable");
-  text("actual-reason", "No current decision could be retrieved.");
-  document.querySelector(".versus span").textContent = "—";
-  callout.querySelector(".callout-icon").textContent = "!";
-  callout.querySelector("strong").textContent = "Unable to verify parity";
-  callout.querySelector("p").textContent =
-    "The policy service could not be reached. Previous results have been cleared; retry before making a decision.";
+  incidentData = null;
+  const canvas = element("decision-canvas");
+  canvas.classList.remove("loading", "match", "mismatch");
+  canvas.setAttribute("aria-busy", "false");
+  element("status-chip").className = "status-chip";
+  text("status-chip", "Verification unavailable");
+  text("incident-label", "INCIDENT STATUS UNAVAILABLE");
+  text("finding-title", "Unable to verify the current policy decision.");
+  text("finding-summary", "The prior result has been cleared. Retry before drawing a conclusion.");
+  text("policy-id", "—");
+  text("issue-year", "—");
+  text("policy-status", "—");
+  text("cancel-reason", "—");
+  text("claim-amount", "—");
+  text("reference-label", "Expected behavior");
+  text("reference-qualifier", "Unavailable");
+  text("comparison-label", "Current branch");
+  text("comparison-qualifier", "Unavailable");
+  text("reference-decision", "Unavailable");
+  text("comparison-decision", "Unavailable");
+  text("comparison-mark", "—");
+  text("parity-symbol", "—");
+  text("change-summary", "Retry verification before drawing a conclusion.");
+  text("legacy-control", "Reference status unavailable");
+  text("merge-owner", "No decision should be made");
+  text("verification-time", "Policy service unavailable");
+  text("screen-reader-status", "Verification unavailable. Previous decisions have been cleared.");
+  element("snapshot-button").disabled = true;
+  element("live-button").disabled = true;
+  element("snapshot-button").setAttribute("aria-pressed", "false");
+  element("live-button").setAttribute("aria-pressed", "false");
+  element("reference-code").replaceChildren();
+  element("comparison-code").replaceChildren();
 }
 
 async function loadIncident() {
-  const button = document.getElementById("rerun-button");
+  const button = element("verify-button");
+  const canvas = element("decision-canvas");
+  const restoreFocus = document.activeElement === button;
   button.disabled = true;
-  button.textContent = "Checking…";
+  button.textContent = "Verifying…";
+  canvas.classList.add("loading");
+  canvas.setAttribute("aria-busy", "true");
+  text("screen-reader-status", "Verifying the current TypeScript branch against the source-backed incident reference.");
+
   try {
     const response = await fetch("/api/incident", { cache: "no-store" });
     if (!response.ok) throw new Error("Incident API unavailable");
-    renderParity(await response.json());
+    const nextData = await response.json();
+    commitWithTransition(() => {
+      incidentData = nextData;
+      activeView = "live";
+      render();
+    });
   } catch (error) {
     renderConnectionError();
     console.error(error);
   } finally {
     button.disabled = false;
-    button.textContent = "Re-run case";
+    button.textContent = "Verify current branch";
+    if (restoreFocus) button.focus({ preventScroll: true });
   }
 }
 
-async function evaluatePolicy(event) {
-  event.preventDefault();
-  const reason = document.getElementById("form-reason").value;
-  const result = document.getElementById("simulator-result");
-  result.querySelector("span").textContent = "Evaluating";
-  result.querySelector("strong").textContent = "Running policy rules…";
-  result.querySelector("p").textContent = "Using the live TypeScript service.";
-
-  const policy = {
-    policyId: "SIMULATED-POLICY",
-    issueYear: Number(document.getElementById("form-year").value),
-    status: document.getElementById("form-status").value,
-    cancelReason: reason || null,
-    claimAmount: Number(document.getElementById("form-amount").value),
-  };
-
-  try {
-    const response = await fetch("/api/evaluate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ policy }),
-    });
-    const body = await response.json();
-    if (!response.ok) throw new Error(body.error ?? "Evaluation failed");
-    result.querySelector("span").textContent = "Live decision";
-    result.querySelector("strong").textContent =
-      decisionLabels[body.decision.code] ?? body.decision.code;
-    result.querySelector("p").textContent = body.decision.reason;
-  } catch (error) {
-    result.querySelector("span").textContent = "Error";
-    result.querySelector("strong").textContent = "Unable to evaluate policy";
-    result.querySelector("p").textContent = error.message;
-  }
-}
-
-document.getElementById("rerun-button").addEventListener("click", loadIncident);
-document.getElementById("policy-form").addEventListener("submit", evaluatePolicy);
+element("snapshot-button").addEventListener("click", () => changeView("snapshot"));
+element("live-button").addEventListener("click", () => changeView("live"));
+element("verify-button").addEventListener("click", loadIncident);
 loadIncident();

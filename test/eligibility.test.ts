@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { determineEligibility, type Policy } from "../src/eligibility.ts";
+import { determineEligibility, traceEligibility, type Policy } from "../src/eligibility.ts";
 
 function policy(overrides: Partial<Policy> = {}): Policy {
   return {
@@ -18,6 +18,18 @@ describe("determineEligibility", () => {
     const result = determineEligibility(policy({ issueYear: 2008 }));
 
     assert.equal(result.code, "ELIGIBLE_LEGACY");
+  });
+
+  it("emits a coherent executable trace for the competing-rule incident", () => {
+    const incident = policy({ issueYear: 2008, status: "CANCELLED", cancelReason: "FRAUD" });
+    const result = traceEligibility(incident);
+    const terminalIndex = result.trace.findIndex((step) => step.terminal);
+
+    assert.equal(result.decision.code, determineEligibility(incident).code);
+    assert.ok(terminalIndex >= 0);
+    assert.equal(result.trace.filter((step) => step.terminal).length, 1);
+    assert.ok(result.trace.slice(terminalIndex + 1).every((step) => !step.reached && !step.matched));
+    assert.equal(new Set(result.trace.map((step) => step.ruleId)).size, 4);
   });
 
   it("approves a current active policy within the standard limit", () => {
