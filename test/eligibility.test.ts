@@ -71,4 +71,16 @@ describe("determineEligibility", () => {
 
     assert.equal(result.code, "ELIGIBLE_LEGACY");
   });
+
+  it("denies a pre-2010 policy cancelled for fraud before grandfathering applies", () => {
+    const result = determineEligibility(
+      policy({
+        issueYear: 2008,
+        status: "CANCELLED",
+        cancelReason: "FRAUD",
+      }),
+    );
+
+    assert.equal(result.code, "DENIED_FRAUD");
+  });
 });
