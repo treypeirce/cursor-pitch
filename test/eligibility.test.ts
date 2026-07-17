@@ -40,6 +40,18 @@ describe("determineEligibility", () => {
     assert.equal(result.code, "DENIED_FRAUD");
   });
 
+  it("denies a pre-2010 policy cancelled for fraud before grandfathering applies", () => {
+    const result = determineEligibility(
+      policy({
+        issueYear: 2008,
+        status: "CANCELLED",
+        cancelReason: "FRAUD",
+      }),
+    );
+
+    assert.equal(result.code, "DENIED_FRAUD");
+  });
+
   it("sends a customer-cancelled current policy to manual review", () => {
     const result = determineEligibility(
       policy({ status: "CANCELLED", cancelReason: "CUSTOMER_REQUEST" }),
